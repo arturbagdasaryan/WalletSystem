@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Core;
 using System.IO;
 using System;
 using System.Web.Http;
