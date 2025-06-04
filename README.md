@@ -29,7 +29,7 @@ This project implements a fault-tolerant and concurrent-safe wallet system for u
 - Entity Framework Core 7+ (InMemory provider)
 - Clean Architecture (Domain, Application, Infrastructure, API layers)
 - Swagger (Swashbuckle.WebApi)
-- Logging (ConsoleLogger via Microsoft.Extensions.Logging)
+- Logging (Serilog via Microsoft.Extensions.Logging)
 
 ---
 
