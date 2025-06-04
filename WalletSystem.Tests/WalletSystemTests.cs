@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WalletSystem.Infrastructure.Data;
@@ -15,20 +14,12 @@ namespace WalletSystem.Tests
         private WalletDbContext _context;
         private WalletService _service;
         private Guid _walletId;
-        private SqliteConnection _connection;
 
         [TestInitialize]
         public async Task Init()
         {
-            // Initialize SQLite native library
-            SQLitePCL.Batteries.Init();
-
-            // Setup SQLite in-memory connection
-            _connection = new SqliteConnection("DataSource=:memory:");
-            _connection.Open();
-
             var options = new DbContextOptionsBuilder<WalletDbContext>()
-                .UseSqlite(_connection)
+                .UseInMemoryDatabase("WalletDb")
                 .Options;
 
             _context = new WalletDbContext(options);
@@ -39,13 +30,6 @@ namespace WalletSystem.Tests
             _service = new WalletService(walletRepo, txRepo);
 
             _walletId = await _service.CreateWalletAsync();
-        }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            _context?.Dispose();
-            _connection?.Dispose();
         }
 
         [TestMethod]
