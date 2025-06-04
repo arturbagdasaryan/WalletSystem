@@ -56,6 +56,8 @@ This project implements a fault-tolerant and concurrent-safe wallet system for u
 
 Swagger will be available at: https://localhost:44312/swagger
 
+---
+
 ## 🔌 API Endpoints
 
 Base URL: http://localhost:44312/api/wallet
