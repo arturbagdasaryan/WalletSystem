@@ -6,6 +6,10 @@ using Unity.WebApi;
 using WalletSystem.Api.App_Start;
 using WalletSystem.Infrastructure.Data;
 using WalletSystem.Infrastructure.Repositories;
+using System.Collections.Generic;
+using System.Web.Http.Dependencies;
+using System;
+using WalletSystem.Api.Controllers;
 
 namespace WalletSystem.Api
 {
@@ -16,22 +20,37 @@ namespace WalletSystem.Api
             GlobalConfiguration.Configure(WebApiConfig.Register);
             SwaggerConfig.Register();
 
-            var container = new UnityContainer();
+            // DI setup
+            var builder = new DbContextOptionsBuilder<WalletDbContext>();
+            builder.UseInMemoryDatabase("WalletDb");
 
-            // Register DbContext
-            container.RegisterFactory<WalletDbContext>(c =>
-            {
-                var optionsBuilder = new DbContextOptionsBuilder<WalletDbContext>();
-                optionsBuilder.UseInMemoryDatabase("WalletDb");
-                return new WalletDbContext(optionsBuilder.Options);
-            }, new TransientLifetimeManager());
+            var dbContext = new WalletDbContext(builder.Options);
+            var walletRepository = new WalletRepository(dbContext);
+            var transactionRepository = new TransactionRepository(dbContext);
+            var walletService = new WalletService(walletRepository, transactionRepository);
 
-            // Register repositories and service
-            container.RegisterType<WalletRepository>();
-            container.RegisterType<TransactionRepository>();
-            container.RegisterType<WalletService>();
-
-            GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);
+            GlobalConfiguration.Configuration.DependencyResolver = new SimpleInjectorResolver(walletService);
         }
     }
+    public class SimpleInjectorResolver : IDependencyResolver
+    {
+        private readonly WalletService _walletService;
+
+        public SimpleInjectorResolver(WalletService walletService)
+        {
+            _walletService = walletService;
+        }
+
+        public IDependencyScope BeginScope() => this;
+        public object GetService(Type serviceType)
+        {
+            if (serviceType == typeof(WalletController))
+                return new WalletController(_walletService);
+            return null;
+        }
+
+        public IEnumerable<object> GetServices(Type serviceType) => new List<object>();
+        public void Dispose() { }
+    }
+
 }
