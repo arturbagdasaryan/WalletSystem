@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Threading.Tasks;
 using WalletSystem.Domain.Entities;
@@ -7,40 +6,40 @@ using WalletSystem.Infrastructure.Repositories;
 
 public class WalletService
 {
-    private readonly WalletRepository _walletRepo;
-    private readonly TransactionRepository _txRepo;
+    private readonly WalletRepository _walletRepository;
+    private readonly TransactionRepository _transactionRepository;
     private readonly ILogger<WalletService> _logger;
 
-    public WalletService(WalletRepository walletRepo, TransactionRepository txRepo)
+    public WalletService(WalletRepository walletRepository, TransactionRepository transactionRepository, ILogger<WalletService> logger)
     {
-        _logger = new NullLogger<WalletService>();
-        _walletRepo = walletRepo;
-        _txRepo = txRepo;
+        _walletRepository = walletRepository;
+        _transactionRepository = transactionRepository;
+        _logger = logger;
     }
 
     public async Task<Guid> CreateWalletAsync()
     {
         var wallet = new Wallet { Id = Guid.NewGuid(), Balance = 0 };
-        await _walletRepo.AddAsync(wallet);
+        await _walletRepository.AddAsync(wallet);
         _logger.LogInformation($"Created wallet {wallet.Id}");
         return wallet.Id;
     }
 
     public async Task<decimal> GetBalanceAsync(Guid walletId)
     {
-        var wallet = await _walletRepo.GetByIdAsync(walletId);
+        var wallet = await _walletRepository.GetByIdAsync(walletId);
         return wallet?.Balance ?? throw new InvalidOperationException("Wallet not found");
     }
 
     public async Task AddFundsAsync(Guid walletId, decimal amount, Guid txId)
     {
-        if (await _txRepo.GetByIdAsync(txId) != null) return; // Prevent double-spending
+        if (await _transactionRepository.GetByIdAsync(txId) != null) return; // Prevent double-spending
 
-        var wallet = await _walletRepo.GetByIdAsync(walletId);
+        var wallet = await _walletRepository.GetByIdAsync(walletId);
         wallet.Balance += amount;
 
-        await _walletRepo.UpdateAsync(wallet);
-        await _txRepo.AddAsync(new WalletTransaction
+        await _walletRepository.UpdateAsync(wallet);
+        await _transactionRepository.AddAsync(new WalletTransaction
         {
             Id = txId,
             WalletId = walletId,
@@ -53,14 +52,14 @@ public class WalletService
 
     public async Task RemoveFundsAsync(Guid walletId, decimal amount, Guid txId)
     {
-        if (await _txRepo.GetByIdAsync(txId) != null) return; // Prevent double-spending
+        if (await _transactionRepository.GetByIdAsync(txId) != null) return; // Prevent double-spending
 
-        var wallet = await _walletRepo.GetByIdAsync(walletId);
+        var wallet = await _walletRepository.GetByIdAsync(walletId);
         if (wallet.Balance < amount) throw new InvalidOperationException("Insufficient balance");
 
         wallet.Balance -= amount;
-        await _walletRepo.UpdateAsync(wallet);
-        await _txRepo.AddAsync(new WalletTransaction
+        await _walletRepository.UpdateAsync(wallet);
+        await _transactionRepository.AddAsync(new WalletTransaction
         {
             Id = txId,
             WalletId = walletId,

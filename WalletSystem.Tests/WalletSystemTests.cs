@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WalletSystem.Infrastructure.Data;
 using WalletSystem.Infrastructure.Repositories;
@@ -25,10 +26,11 @@ namespace WalletSystem.Tests
             _context = new WalletDbContext(options);
             await _context.Database.EnsureCreatedAsync();
 
-            var walletRepo = new WalletRepository(_context);
-            var txRepo = new TransactionRepository(_context);
-            _service = new WalletService(walletRepo, txRepo);
+            var walletRepository = new WalletRepository(_context);
+            var transactionRepository = new TransactionRepository(_context);
+            var logger = new NullLogger<WalletService>();
 
+            _service = new WalletService(walletRepository, transactionRepository, logger);
             _walletId = await _service.CreateWalletAsync();
         }
 
