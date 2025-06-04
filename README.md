@@ -37,12 +37,6 @@ This project implements a fault-tolerant and concurrent-safe wallet system for u
 
 - Visual Studio 2022
 - .NET Framework 4.8 SDK
-- NuGet packages:
-  - Microsoft.EntityFrameworkCore
-  - Microsoft.EntityFrameworkCore.InMemory
-  - Microsoft.Extensions.DependencyInjection
-  - Microsoft.Extensions.Logging.Console
-  - Swashbuckle.Core (for .NET Framework)
 
 ---
 
