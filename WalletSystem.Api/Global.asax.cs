@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.Web.Http;
+using Unity.Lifetime;
+using Unity;
+using Unity.WebApi;
 using WalletSystem.Api.App_Start;
 using WalletSystem.Infrastructure.Data;
 using WalletSystem.Infrastructure.Repositories;
@@ -15,15 +16,23 @@ namespace WalletSystem.Api
             GlobalConfiguration.Configure(WebApiConfig.Register);
             SwaggerConfig.Register();
 
-            var services = new ServiceCollection();
-            services.AddDbContext<WalletDbContext>(opt => opt.UseInMemoryDatabase("WalletDb"));
-            services.AddScoped<WalletRepository>();
-            services.AddScoped<TransactionRepository>();
-            services.AddScoped<WalletService>();
-            services.AddLogging(builder => builder.AddConsole());
+            var container = new UnityContainer();
 
-            var provider = services.BuildServiceProvider();
-            GlobalConfiguration.Configuration.DependencyResolver = new DefaultDependencyResolver(provider);
+            // Register DbContext
+            container.RegisterFactory<WalletDbContext>(c =>
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<WalletDbContext>();
+                optionsBuilder.UseInMemoryDatabase("WalletDb");
+                return new WalletDbContext(optionsBuilder.Options);
+            }, new TransientLifetimeManager());
+
+            // Register repositories and service
+            container.RegisterType<WalletRepository>();
+            container.RegisterType<TransactionRepository>();
+            container.RegisterType<WalletService>();
+
+            GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);
         }
+
     }
 }

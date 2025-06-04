@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Threading.Tasks;
 using WalletSystem.Domain.Entities;
@@ -10,11 +11,11 @@ public class WalletService
     private readonly TransactionRepository _txRepo;
     private readonly ILogger<WalletService> _logger;
 
-    public WalletService(WalletRepository walletRepo, TransactionRepository txRepo, ILogger<WalletService> logger)
+    public WalletService(WalletRepository walletRepo, TransactionRepository txRepo)
     {
+        _logger = new NullLogger<WalletService>();
         _walletRepo = walletRepo;
         _txRepo = txRepo;
-        _logger = logger;
     }
 
     public async Task<Guid> CreateWalletAsync()
