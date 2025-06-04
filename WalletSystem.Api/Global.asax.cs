@@ -1,15 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Web.Http;
-using Unity.Lifetime;
-using Unity;
-using Unity.WebApi;
 using WalletSystem.Api.App_Start;
 using WalletSystem.Infrastructure.Data;
 using WalletSystem.Infrastructure.Repositories;
-using System.Collections.Generic;
-using System.Web.Http.Dependencies;
-using System;
-using WalletSystem.Api.Controllers;
 
 namespace WalletSystem.Api
 {
@@ -29,28 +22,7 @@ namespace WalletSystem.Api
             var transactionRepository = new TransactionRepository(dbContext);
             var walletService = new WalletService(walletRepository, transactionRepository);
 
-            GlobalConfiguration.Configuration.DependencyResolver = new SimpleInjectorResolver(walletService);
+            GlobalConfiguration.Configuration.DependencyResolver = new DependencyResolver.DependencyResolver(walletService);
         }
     }
-    public class SimpleInjectorResolver : IDependencyResolver
-    {
-        private readonly WalletService _walletService;
-
-        public SimpleInjectorResolver(WalletService walletService)
-        {
-            _walletService = walletService;
-        }
-
-        public IDependencyScope BeginScope() => this;
-        public object GetService(Type serviceType)
-        {
-            if (serviceType == typeof(WalletController))
-                return new WalletController(_walletService);
-            return null;
-        }
-
-        public IEnumerable<object> GetServices(Type serviceType) => new List<object>();
-        public void Dispose() { }
-    }
-
 }
