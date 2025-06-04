@@ -33,6 +33,5 @@ namespace WalletSystem.Api
 
             GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);
         }
-
     }
 }
